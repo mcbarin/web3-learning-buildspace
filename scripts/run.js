@@ -1,35 +1,33 @@
 const main = async () => {
-  const [owner, randomPerson] = await hre.ethers.getSigners();
   const waveContractFactory = await hre.ethers.getContractFactory('WavePortal');
   const waveContract = await waveContractFactory.deploy();
   await waveContract.deployed();
-
-  console.log("Contract deployed to:", waveContract.address);
-  console.log("Contract deployed by:", owner.address);
+  console.log('Contract addy:', waveContract.address);
 
   let waveCount;
   waveCount = await waveContract.getTotalWaves();
+  console.log(waveCount.toNumber());
 
-  let waveTxn = await waveContract.wave();
-  await waveTxn.wait()
+  let waveTxn = await waveContract.wave('A message!');
+  await waveTxn.wait(); // Wait for the transaction to be mined
 
-  // Should've been updated
-  waveCount = await waveContract.getTotalWaves();
+  const [_, randomPerson] = await hre.ethers.getSigners();
+  waveTxn = await waveContract.connect(randomPerson).wave('Another message!');
+  await waveTxn.wait(); // Wait for the transaction to be mined
 
-  // Now random person waves
-  waveTxn = await waveContract.connect(randomPerson).wave();
-  await waveTxn.wait();
-
-  waveCount = await waveContract.getTotalWaves();
+  let allWaves = await waveContract.getAllWaves();
+  console.log(allWaves);
 
   // Let's poke someone as it's done in Facebook years before
   let pokeCount;
   pokeCount = await waveContract.getTotalPokes();
+  console.log(pokeCount.toNumber());
 
-  pokeTxn = await waveContract.poke();
-  await pokeTxn.wait();
+  pokeTxn = await waveContract.connect(randomPerson).poke('Ha Ha Poked you!');
+  await pokeTxn.wait(); // Wait for the transaction to be mined
 
-  pokeCount = await waveContract.getTotalPokes();
+  let allPokes = await waveContract.getAllPokes();
+  console.log(allPokes);
 };
 
 const runMain = async () => {
